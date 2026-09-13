@@ -10,6 +10,29 @@ from src.config import EvalConfig
 _DEFAULTS = EvalConfig()
 RANDOM_STATE = _DEFAULTS.random_state
 
+# Multiplicative spread around the sqrt(N/2) rule-of-thumb center, from
+# heavy under-segmentation (0.25x) to heavy over-segmentation (3x).
+K_VALUES_MULTIPLIERS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0]
+
+
+def suggest_k_values(n: int) -> list:
+    """
+    Build the set of K values to sweep for clustering evaluation, anchored
+    to the actual number of hexagons N instead of a fixed, arbitrary list.
+
+    Centered on sqrt(N/2), the common rule-of-thumb estimate for the
+    "natural" number of clusters in a dataset of size N (the same
+    sqrt(N)-style heuristic already used for k_ref in AnomalyConfig).
+    A geometric spread around that center (see K_VALUES_MULTIPLIERS) also
+    probes coarser and finer clusterings, rather than assuming the estimate
+    is exactly right.
+    """
+    if n < 4:
+        return [max(2, n - 1)]
+    center = (n / 2) ** 0.5
+    candidates = sorted({round(center * m) for m in K_VALUES_MULTIPLIERS})
+    return [k for k in candidates if 2 <= k <= n - 1]
+
 
 def cluster_labels(emb, n_clusters):
     """Run KMeans on the embedding to obtain cluster labels."""

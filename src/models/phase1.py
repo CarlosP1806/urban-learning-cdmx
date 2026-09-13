@@ -16,6 +16,7 @@ _DEFAULTS = Phase1Config()
 EMB_DIM_H  = _DEFAULTS.emb_dim_h
 EMB_DIM_W  = _DEFAULTS.emb_dim_w
 EMB_DIM_S  = _DEFAULTS.emb_dim_s
+HIDDEN_DIM = _DEFAULTS.hidden_dim
 BATCH_SIZE = _DEFAULTS.batch_size
 N_EPOCHS   = _DEFAULTS.n_epochs
 LR         = _DEFAULTS.lr
@@ -72,11 +73,12 @@ class Phase1Model(nn.Module):
     def __init__(self, dim_h, dim_w, dim_s,
                  emb_dim_h=EMB_DIM_H,
                  emb_dim_w=EMB_DIM_W,
-                 emb_dim_s=EMB_DIM_S):
+                 emb_dim_s=EMB_DIM_S,
+                 hidden_dim=HIDDEN_DIM):
         super().__init__()
-        self.emb_h = ScaleEmbedder(dim_h, emb_dim_h)
-        self.emb_w = ScaleEmbedder(dim_w, emb_dim_w)
-        self.emb_s = ScaleEmbedder(dim_s, emb_dim_s)
+        self.emb_h = ScaleEmbedder(dim_h, emb_dim_h, hidden_dim)
+        self.emb_w = ScaleEmbedder(dim_w, emb_dim_w, hidden_dim)
+        self.emb_s = ScaleEmbedder(dim_s, emb_dim_s, hidden_dim)
 
     def _score(self, embedder, x_t, x_c):
         return torch.sigmoid((embedder(x_t) * embedder(x_c)).sum(dim=1))
@@ -122,10 +124,12 @@ def train_phase1(T_h, T_w, T_s,
                  emb_dim_h=EMB_DIM_H,
                  emb_dim_w=EMB_DIM_W,
                  emb_dim_s=EMB_DIM_S,
+                 hidden_dim=HIDDEN_DIM,
                  n_epochs=N_EPOCHS,
                  batch_size=BATCH_SIZE,
                  lr=LR,
-                 figures_dir: Path = PathsConfig().figures_dir) -> tuple:
+                 figures_dir: Path = PathsConfig().figures_dir,
+                 verbose: bool = True) -> tuple:
     """
     Train Phase1Model (pure hex2vec) and return the three embeddings.
 
@@ -138,14 +142,15 @@ def train_phase1(T_h, T_w, T_s,
     loader    = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     model     = Phase1Model(dim_h, dim_w, dim_s,
-                            emb_dim_h, emb_dim_w, emb_dim_s).to(device)
+                            emb_dim_h, emb_dim_w, emb_dim_s, hidden_dim).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     criterion = nn.BCELoss()
 
-    logger.info(f"Phase 1: {len(dataset):,} pairs, {n_epochs} epochs, batch size {batch_size}")
+    if verbose:
+        logger.info(f"Phase 1: {len(dataset):,} pairs, {n_epochs} epochs, batch size {batch_size}")
 
     loss_history = []
-    progress = tqdm(range(n_epochs), desc="Phase 1", unit="epoch")
+    progress = tqdm(range(n_epochs), desc="Phase 1", unit="epoch", disable=not verbose)
 
     for epoch in progress:
         model.train()
@@ -171,8 +176,10 @@ def train_phase1(T_h, T_w, T_s,
     model.eval()
     E_h, E_w, E_s = model.get_embeddings(T_h, T_w, T_s)
 
-    plot_training_loss(loss_history, "Training Loss - Phase 1",
-                        figures_dir / "phase1_loss.png")
-    logger.info(f"Phase 1 done: final loss {loss_history[-1]:.4f}")
+    if figures_dir is not None:
+        plot_training_loss(loss_history, "Training Loss - Phase 1",
+                            figures_dir / "phase1_loss.png")
+    if verbose:
+        logger.info(f"Phase 1 done: final loss {loss_history[-1]:.4f}")
 
     return E_h.detach(), E_w.detach(), E_s.detach(), model

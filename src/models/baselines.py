@@ -17,6 +17,9 @@ RANDOM_STATE = _DEFAULTS.random_state
 AE_EPOCHS    = _DEFAULTS.ae_epochs
 AE_LR        = _DEFAULTS.ae_lr
 AE_BATCH     = _DEFAULTS.ae_batch
+HEX2VEC_EPOCHS     = _DEFAULTS.hex2vec_epochs
+HEX2VEC_LR         = _DEFAULTS.hex2vec_lr
+HEX2VEC_HIDDEN_DIM = _DEFAULTS.hex2vec_hidden_dim
 
 
 def run_pca(X_raw, target_dim):
@@ -156,10 +159,10 @@ def train_hex2vec(
     X_raw: np.ndarray,
     target_dim: int,
     device: torch.device,
-    n_epochs: int = 30,
+    n_epochs: int = HEX2VEC_EPOCHS,
     batch_size: int = 256,
-    lr: float = 1e-3,
-    hidden_dim: int = 128,
+    lr: float = HEX2VEC_LR,
+    hidden_dim: int = HEX2VEC_HIDDEN_DIM,
 ) -> np.ndarray:
     """
     Train pure hex2vec and return the learned embeddings (N, target_dim).

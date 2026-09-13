@@ -1,0 +1,39 @@
+{
+  "n_trials": 40,
+  "epoch_range": [
+    20,
+    100
+  ],
+  "seed": 42,
+  "target_dim": 32,
+  "model": {
+    "best_value": 0.4407796561717987,
+    "best_params": {
+      "emb_dim_h": 32,
+      "emb_dim_w": 8,
+      "emb_dim_s": 64,
+      "hidden_dim": 64,
+      "phase1_lr": 0.0006626250104022493,
+      "phase1_epochs": 20,
+      "latent_dim": 8,
+      "final_dim": 32,
+      "phase2_lr": 0.002075640733128536,
+      "phase2_epochs": 50
+    }
+  },
+  "baseline_autoencoder": {
+    "best_value": 0.15895779111555644,
+    "best_params": {
+      "ae_lr": 0.00010216619941826734,
+      "ae_epochs": 20
+    }
+  },
+  "baseline_hex2vec": {
+    "best_value": 0.3140789419412613,
+    "best_params": {
+      "hex2vec_hidden_dim": 32,
+      "hex2vec_lr": 0.00012657107246919839,
+      "hex2vec_epochs": 90
+    }
+  }
+}

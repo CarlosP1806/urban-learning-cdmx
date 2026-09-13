@@ -21,33 +21,41 @@ class FeatureConfig:
 
 @dataclass
 class Phase1Config:
-    emb_dim_h: int = 16
+    emb_dim_h: int = 32
     emb_dim_w: int = 8
-    emb_dim_s: int = 32
-    hidden_dim: int = 64
-    batch_size: int = 256
-    n_epochs: int = 175
-    lr: float = 1e-3
+    emb_dim_s: int = 64
+    hidden_dim: int = 32
+    batch_size: int = 64
+    n_epochs: int = 20
+    lr: float = 0.0006626250104022493 
     k_ring: int = 1
     n_neg: int = 3
 
 
 @dataclass
 class Phase2Config:
-    latent_dim: int = 32
-    final_dim: int = 64
-    n_epochs: int = 175
+    latent_dim: int = 8
+    final_dim: int = 32
+    n_epochs: int = 50
     batch_size: int = 256
-    lr: float = 1e-3
+    lr: float = 0.002075640733128536
 
 
 @dataclass
 class EvalConfig:
+    # Static fallback only. In practice this is overwritten by
+    # evaluation.metrics.suggest_k_values(hf.N), which derives the sweep
+    # from the actual number of hexagons instead of a fixed guess.
     k_values: list = field(default_factory=lambda: [5, 10, 15, 20])
     random_state: int = 42
-    ae_epochs: int = 60
-    ae_lr: float = 1e-3
+    # B3: Autoencoder. 
+    ae_epochs: int = 20
+    ae_lr: float = 0.00010216619941826734
     ae_batch: int = 256
+    # B4: Hex2Vec. 
+    hex2vec_epochs: int = 90
+    hex2vec_lr: float = 0.00012657107246919839
+    hex2vec_hidden_dim: int = 32
     names: dict = field(default_factory=lambda: {
         "pca":     "B1: PCA",
         "nmf":     "B2: NMF",
@@ -65,6 +73,25 @@ class AnomalyConfig:
 
 
 @dataclass
+class TuningConfig:
+    """Settings for the standalone hyperparameter search (src/pipeline/tune.py).
+
+    Runs Phase1 + Phase2 per trial (n_epochs is itself tuned within
+    [min_epochs, max_epochs]) and scores each trial by mean silhouette over
+    eval.k_values. Independent from the main pipeline: it never touches
+    src/outputs/embeddings. k_ring and n_neg are kept fixed at their
+    Phase1Config defaults, not tuned.
+    """
+    n_trials: int = 40
+    min_epochs: int = 20
+    max_epochs: int = 100
+    epoch_step: int = 10
+    seed: int = 42
+    study_name: str = "hex_embeddings_tuning"
+    results_dir: Path = PROJECT_ROOT / "src" / "outputs" / "tuning"
+
+
+@dataclass
 class ExperimentConfig:
     seed: int = 32
     paths: PathsConfig = field(default_factory=PathsConfig)
@@ -73,3 +100,4 @@ class ExperimentConfig:
     phase2: Phase2Config = field(default_factory=Phase2Config)
     eval: EvalConfig = field(default_factory=EvalConfig)
     anomaly: AnomalyConfig = field(default_factory=AnomalyConfig)
+    tuning: TuningConfig = field(default_factory=TuningConfig)

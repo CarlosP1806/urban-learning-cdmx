@@ -12,7 +12,7 @@ from src.common.log import get_logger, section
 from src.models.phase1 import build_pairs
 from src.models.baselines import run_pca, run_nmf, run_autoencoder, train_hex2vec
 from src.evaluation.report import build_input_matrix, print_final_table, plot_per_k
-from src.evaluation.metrics import evaluate_embedding
+from src.evaluation.metrics import evaluate_embedding, suggest_k_values
 
 logger = get_logger(__name__)
 
@@ -27,6 +27,10 @@ def main():
 
     final_emb, hex_ids, meta = load_embedding_artifacts(cfg)
     hf = load_hex_features(cfg)
+
+    cfg.eval.k_values = suggest_k_values(hf.N)
+    logger.info(f"K sweep for clustering metrics (centered on sqrt(N/2)≈{(hf.N / 2) ** 0.5:.1f} "
+                f"for N={hf.N:,} hexagons): {cfg.eval.k_values}")
 
     X_raw, X_nonneg = build_input_matrix(
         hf.hourly_matrix, hf.weekly_matrix, hf.static_matrix

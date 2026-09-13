@@ -46,6 +46,7 @@ def main():
         emb_dim_h = cfg.phase1.emb_dim_h,
         emb_dim_w = cfg.phase1.emb_dim_w,
         emb_dim_s = cfg.phase1.emb_dim_s,
+        hidden_dim = cfg.phase1.hidden_dim,
         n_epochs  = cfg.phase1.n_epochs,
         batch_size = cfg.phase1.batch_size,
         lr         = cfg.phase1.lr,

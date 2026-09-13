@@ -102,7 +102,8 @@ def train_phase2(E_h, E_w, E_s,
                  n_epochs=N_EPOCHS,
                  batch_size=BATCH_SIZE,
                  lr=LR,
-                 figures_dir: Path = PathsConfig().figures_dir) -> tuple:
+                 figures_dir: Path = PathsConfig().figures_dir,
+                 verbose: bool = True) -> tuple:
     """
     Train Phase2Model and return the final embedding.
 
@@ -120,10 +121,11 @@ def train_phase2(E_h, E_w, E_s,
 
     n_batches = max(1, N // batch_size)
 
-    logger.info(f"Phase 2: {N:,} hexagons, {n_epochs} epochs, {n_batches} batches/epoch")
+    if verbose:
+        logger.info(f"Phase 2: {N:,} hexagons, {n_epochs} epochs, {n_batches} batches/epoch")
 
     loss_history = []
-    progress = tqdm(range(n_epochs), desc="Phase 2", unit="epoch")
+    progress = tqdm(range(n_epochs), desc="Phase 2", unit="epoch", disable=not verbose)
 
     for epoch in progress:
         model.train()
@@ -157,9 +159,11 @@ def train_phase2(E_h, E_w, E_s,
     with torch.no_grad():
         final_emb, _, _ = model(E_h.to(device), E_w.to(device), E_s.to(device))
 
-    plot_training_loss(loss_history, "Training Loss - Phase 2",
-                        figures_dir / "phase2_loss.png")
+    if figures_dir is not None:
+        plot_training_loss(loss_history, "Training Loss - Phase 2",
+                            figures_dir / "phase2_loss.png")
     alpha_final = torch.sigmoid(ALPHA).item()
-    logger.info(f"Phase 2 done: final loss {loss_history[-1]:.4f}, alpha={alpha_final:.3f}")
+    if verbose:
+        logger.info(f"Phase 2 done: final loss {loss_history[-1]:.4f}, alpha={alpha_final:.3f}")
 
     return final_emb.cpu().numpy(), model, alpha_final
