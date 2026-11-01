@@ -25,14 +25,20 @@ class HexFeatures:
     C:               int                 # number of crime categories
 
 
+def assign_hex_ids(df: pd.DataFrame, resolution: int = RESOLUTION) -> pd.Series:
+    return pd.Series(
+        [h3.latlng_to_cell(lat, lon, resolution)
+         for lat, lon in zip(df["latitud"], df["longitud"])],
+        index=df.index,
+    )
+
+
 def build_hex_features(df: pd.DataFrame,
                        resolution: int = RESOLUTION,
                        min_events: int = MIN_EVENTS) -> HexFeatures:
     df = df.copy()
-    df["hex_id"] = df.apply(
-        lambda r: h3.latlng_to_cell(r["latitud"], r["longitud"], resolution),
-        axis=1
-    )
+    if "hex_id" not in df.columns:
+        df["hex_id"] = assign_hex_ids(df, resolution)
 
     counts      = df["hex_id"].value_counts()
     valid       = counts[counts >= min_events].index

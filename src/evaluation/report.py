@@ -51,7 +51,7 @@ def print_final_table(results: list[dict], k_values: list) -> None:
 def plot_per_k(embeddings: dict,
                names: dict,
                k_values: list,
-               output_dir: Path = None) -> plt.Figure:
+               output_dir: Path = None) -> dict:
     """
     Build a figure with 3 panels (Silhouette, Calinski-Harabasz, Davies-Bouldin).
     Each group of bars shows all methods for that K.
@@ -106,5 +106,19 @@ def plot_per_k(embeddings: dict,
     if output_dir is not None:
         output_dir.mkdir(parents=True, exist_ok=True)
         fig.savefig(output_dir / "metrics_per_k.png", bbox_inches="tight")
+    plt.close(fig)
 
-    return fig
+    return data
+
+
+def print_per_k_table(per_k: dict, names: dict, k_values: list) -> None:
+    """Print the three clustering metrics for every method and every K."""
+    print("\nClustering metrics per K")
+    headers = ["Method", "K", "Silhouette", "Calinski-Harabasz", "Davies-Bouldin"]
+    rows = [
+        [names[m], str(k),
+         f"{d['sil'][i]:+.4f}", f"{d['ch'][i]:,.1f}", f"{d['db'][i]:.4f}"]
+        for m, d in per_k.items()
+        for i, k in enumerate(k_values)
+    ]
+    print_table(headers, rows, aligns=["l", "r", "r", "r", "r"])
