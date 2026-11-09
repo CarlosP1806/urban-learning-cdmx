@@ -11,7 +11,7 @@ from src.common.io import load_hex_features, load_embedding_artifacts
 from src.common.log import get_logger, section
 from src.models.phase1 import build_pairs
 from src.models.baselines import run_pca, run_nmf, run_autoencoder, train_hex2vec
-from src.evaluation.report import build_input_matrix, print_final_table, plot_per_k
+from src.evaluation.report import build_input_matrix, print_final_table, plot_per_k, print_per_k_table
 from src.evaluation.metrics import evaluate_embedding, suggest_k_values
 
 logger = get_logger(__name__)
@@ -57,8 +57,9 @@ def main():
     ]
 
     print_final_table(results, cfg.eval.k_values)
-    plot_per_k(embeddings, cfg.eval.names, cfg.eval.k_values,
-              output_dir=cfg.paths.figures_dir / "evaluation")
+    per_k = plot_per_k(embeddings, cfg.eval.names, cfg.eval.k_values,
+                       output_dir=cfg.paths.figures_dir / "evaluation")
+    print_per_k_table(per_k, cfg.eval.names, cfg.eval.k_values)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 
@@ -6,6 +7,7 @@ from matplotlib.colors import Normalize
 from matplotlib.cm import ScalarMappable
 import geopandas as gpd
 import contextily as ctx
+import xyzservices
 from shapely.geometry import Polygon
 
 from pathlib import Path
@@ -14,7 +16,7 @@ import h3
 from sklearn.neighbors import NearestNeighbors
 from scipy.stats import spearmanr
 
-from src.config import AnomalyConfig
+from src.config import AnomalyConfig, PROJECT_ROOT
 from src.common.log import get_logger, print_table
 
 logger = get_logger(__name__)
@@ -25,6 +27,43 @@ K_VALUE = AnomalyConfig().k_value
 def _h3_to_polygon(h):
     boundary = h3.cell_to_boundary(h)
     return Polygon([(lon, lat) for lat, lon in boundary])
+
+
+def _carto_api_key():
+    key = os.environ.get("CARTO_API_KEY", "").strip()
+    if key:
+        return key
+    env_file = PROJECT_ROOT / ".env"
+    if env_file.exists():
+        for line in env_file.read_text().splitlines():
+            line = line.strip()
+            if line.startswith("CARTO_API_KEY="):
+                return line.split("=", 1)[1].strip().strip('"').strip("'") or None
+    return None
+
+
+def basemap(ax, zoom: int, alpha: float = 0.4) -> None:
+    """CARTO Positron basemap; drawn only when a CARTO API key is available."""
+    key = _carto_api_key()
+    if key is None:
+        logger.warning(
+            "CARTO_API_KEY not set: map rendered WITHOUT basemap. Get a key at "
+            "https://carto.com/ and add CARTO_API_KEY=<key> to .env at the repo root "
+            "(or export it), then rerun."
+        )
+        return
+    ctx.add_basemap(ax, source=_carto_positron(key), zoom=zoom, alpha=alpha)
+
+
+def _carto_positron(api_key: str) -> xyzservices.TileProvider:
+    """Keyed CARTO raster endpoint; the bundled CartoDB provider has no key placeholder."""
+    return xyzservices.TileProvider(
+        name="CartoDB.Positron",
+        url="https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key={api_key}",
+        attribution="(C) OpenStreetMap contributors (C) CARTO",
+        api_key=api_key,
+        max_zoom=20,
+    )
 
 
 def plot_sensitivity(df_npd:   pd.DataFrame,
@@ -105,12 +144,7 @@ def plot_npd_map(df_npd: pd.DataFrame, fig_dir: Path):
         alpha=1.0, edgecolor="black", linewidth=0.8
     )
 
-    ctx.add_basemap(
-        ax,
-        source=ctx.providers.CartoDB.Positron,
-        zoom=11,
-        alpha=0.4
-    )
+    basemap(ax, zoom=11)
 
     sm = ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
@@ -180,7 +214,7 @@ def plot_top_anomaly_profile(
         sub.plot(ax=ax, color=color,
                  alpha=0.5 if role == "neighbor" else 0.9,
                  edgecolor="white", linewidth=0.6)
-    ctx.add_basemap(ax, source=ctx.providers.CartoDB.Positron, zoom=12, alpha=0.4)
+    basemap(ax, zoom=12)
     ax.set_axis_off()
     ax.set_title(f"(A) Top anomaly (red) and its {k_value} embedding neighbors (blue)")
 

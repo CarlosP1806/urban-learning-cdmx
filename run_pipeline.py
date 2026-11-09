@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Single entry point to run the full pipeline: train -> evaluate -> detect_anomalies.
+"""Single entry point to run the full pipeline: train -> evaluate -> detect_anomalies -> make_maps.
 
 Run from anywhere with:
     python run_pipeline.py

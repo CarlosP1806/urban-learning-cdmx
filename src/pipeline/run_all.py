@@ -1,4 +1,4 @@
-"""Single entry point to run the full pipeline: train -> evaluate -> detect_anomalies.
+"""Single entry point to run the full pipeline: train -> evaluate -> detect_anomalies -> make_maps.
 
 Usage:
     python -m src.pipeline.run_all
@@ -8,7 +8,7 @@ Usage:
 import argparse
 import time
 
-from src.pipeline import train, evaluate, detect_anomalies
+from src.pipeline import train, evaluate, detect_anomalies, make_maps
 from src.common.log import get_logger, section
 
 logger = get_logger(__name__)
@@ -17,6 +17,7 @@ STAGES = [
     ("train", train.main),
     ("evaluate", evaluate.main),
     ("detect_anomalies", detect_anomalies.main),
+    ("make_maps", make_maps.main),
 ]
 
 
