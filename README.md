@@ -479,10 +479,13 @@ Not yet run.
 ## Citation
 
 ```bibtex
-@misc{urban_representation_learning_cdmx_2026,
+@inproceedings{valverde2027urban,
   title = {Urban Representation Learning for Identifying Potential Disparities in Crime Reporting},
-  year  = {2026},
-  note  = {Manuscript in preparation}
+  author = {Valverde-Rebaza, Jorge and Paez De La Cruz, C. and P{\'e}rez-Collado, P. and S{\'a}nchez-Cata{\~n}o, D. and Mart{\'\i}nez-Vergara, E.},
+  booktitle = {Proceedings of the International Conference on Artificial Intelligence, Computer, Data Sciences and Applications (ACDSA 2027)},
+  year = {2027},
+  publisher = {IEEE},
+  note = {Accepted, to be published},
 }
 ```
 
