@@ -30,6 +30,9 @@ The current run covers **1,058 cells** at H3 resolution 8 and **38 crime categor
 
 ## Pipeline
 
+![Framework overview](figs/urban-analytics-learning-framework.png)
+*Overview of the proposed framework. Incident-level records with geographic coordinates, occurrence time, and crime category are cleaned, assigned to H3 cells, and aggregated into region-level profiles. Building on these inputs, a self-supervised model learns latent representations of urban regions and uses them to identify reporting patterns that deviate from those of regions with similar learned representations. The framework comprises three stages: (i) construction of complementary regional reporting profiles, (ii) self-supervised learning and fusion of scale-specific representations, and (iii) retrieval of functional peers followed by Neighbor Profile Divergence (NPD) analysis. Steps 1–4 and 6 below implement these stages; steps 5, 7 and 8 cover evaluation, maps and tuning.*
+
 1. **Loading** (`src/data/loader.py`, `src/data/taxonomy.py`). Reads the FGJ CSV, casts dates and coordinates, derives hour-of-day and day-of-week, and maps the free-text `delito` field to 38 standard categories through `CRIME_TAXONOMY`. Rows without coordinates, timestamp, or a mapped category are dropped. On the current file: 2,098,743 records loaded; 101,899 dropped for missing location or date; 133,917 dropped for unmapped offence types; 1,862,927 remain.
 
 2. **Features** (`src/features/hex_features.py`). Each event is assigned to an H3 cell at resolution 8 (about 0.74 km²). Cells with fewer than 30 events are discarded: 1,179 cells have at least one event, 121 are removed, 1,058 are kept. For each remaining cell, three feature matrices are built:
