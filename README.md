@@ -470,14 +470,9 @@ NPD identifies cells whose reporting profile differs from that of cells the mode
 - There are no automated tests. Changes to features or models should be checked by rerunning the pipeline and inspecting `src/outputs/`.
 - No license file is included yet.
 
-## Planned analyses
+## Preprint
 
-Not yet run.
-
-- Sensitivity of the results to the H3 resolution (7 and 9 in addition to 8).
-- Sensitivity to the minimum-incident threshold (values other than 30), including the effect on the set of candidate cells.
-- Anomaly-detection baselines on the same profile: k-nearest-neighbour distance and Local Outlier Factor, compared with NPD by candidate overlap and rank correlation.
-- Retraining with the reporting-delay features removed from the encoder input.
+Available in arXiv [HERE](https://arxiv.org/abs/2611.21825).
 
 ## Citation
 
